@@ -1,0 +1,120 @@
+import java.util.*;
+// import java.io.*; 
+class LRU {
+    int[] p;     // page table (reference string)
+    int[] fr;    // frames
+    int[] fs;    // frame status
+    int n, m;    // n = number of pages, m = number of frames
+    int index, k, l;
+    int flag1 = 0, flag2 = 0, pf = 0;
+    int frsize = 3;  // default frame size (can adjust dynamically)
+    Scanner src = new Scanner(System.in);
+
+    void read() {
+        System.out.print("Enter page table size: ");
+        n = src.nextInt();
+        p = new int[n];
+
+        System.out.println("Enter elements in page table (reference string): ");
+        for (int i = 0; i < n; i++)
+            p[i] = src.nextInt();
+
+        System.out.print("Enter number of page frames: ");
+        m = src.nextInt();
+        fr = new int[m];
+        fs = new int[m];
+        frsize = m;
+    }
+
+    void display() {
+        for (int i = 0; i < m; i++) {
+            if (fr[i] == -1)
+                System.out.print("[ ] ");
+            else
+                System.out.print("[" + fr[i] + "] ");
+        }
+        System.out.println();
+    }
+
+    void lru() {
+        for (int i = 0; i < m; i++)
+            fr[i] = -1;
+
+        for (int j = 0; j < n; j++) {
+            flag1 = 0;
+            flag2 = 0;
+
+            // Check if page already exists in frame
+            for (int i = 0; i < m; i++) {
+                if (fr[i] == p[j]) {
+                    flag1 = 1;
+                    flag2 = 1;
+                    break;
+                }
+            }
+
+            // If empty frame available
+            if (flag1 == 0) {
+                for (int i = 0; i < m; i++) {
+                    if (fr[i] == -1) {
+                        fr[i] = p[j];
+                        flag2 = 1;
+                        pf++;
+                        break;
+                    }
+                }
+            }
+
+            // If no empty frame, use LRU replacement
+            if (flag2 == 0) {
+                for (int i = 0; i < m; i++)
+                    fs[i] = 0;
+
+                for (k = j - 1, l = 1; l <= frsize - 1 && k >= 0; l++, k--) {
+                    for (int i = 0; i < m; i++) {
+                        if (fr[i] == p[k])
+                            fs[i] = 1;
+                    }
+                }
+
+                for (int i = 0; i < m; i++) {
+                    if (fs[i] == 0)
+                        index = i;
+                }
+
+                fr[index] = p[j];
+                pf++;
+            }
+
+            System.out.print("Page: " + p[j] + "  →  ");
+            display();
+        }
+
+        System.out.println("\nTotal number of Page Faults: " + pf);
+    }
+
+    public static void main(String[] args) {
+        LRU a = new LRU();
+        a.read();
+        a.lru();
+    }
+}
+
+// Enter page table size: 9
+// Enter elements in page table (reference string): 
+// 7 0 1 2 0 3 0 4 2
+// Enter number of page frames: 3
+
+
+//O/P:
+// Page: 7  →  [7] [ ] [ ]
+// Page: 0  →  [7] [0] [ ]
+// Page: 1  →  [7] [0] [1]
+// Page: 2  →  [2] [0] [1]
+// Page: 0  →  [2] [0] [1]
+// Page: 3  →  [2] [0] [3]
+// Page: 0  →  [2] [0] [3]
+// Page: 4  →  [4] [0] [3]
+// Page: 2  →  [4] [0] [2]
+
+// Total number of Page Faults: 7
